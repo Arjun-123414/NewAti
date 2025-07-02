@@ -1666,105 +1666,15 @@ def main_app():
 
             # Clear the final transition message right before showing the answer
             final_message_placeholder.empty()
-            st.markdown("""
-            <style>
-            .sql-query-container {
-                background-color: #f8f9fa;
-                border: 1px solid #dee2e6;
-                border-radius: 8px;
-                padding: 16px;
-                margin: 16px 0;
-                font-family: 'Courier New', monospace;
-            }
 
-            .sql-query-header {
-                display: flex;
-                align-items: center;
-                margin-bottom: 12px;
-                color: #495057;
-                font-weight: 600;
-                font-size: 14px;
-            }
-
-            .sql-query-icon {
-                margin-right: 8px;
-                font-size: 18px;
-            }
-
-            .sql-query-code {
-                background-color: #ffffff;
-                border: 1px solid #e9ecef;
-                border-radius: 4px;
-                padding: 12px;
-                overflow-x: auto;
-                font-size: 14px;
-                line-height: 1.5;
-                color: #212529;
-            }
-
-            /* Syntax highlighting for SQL */
-            .sql-keyword {
-                color: #0d6efd;
-                font-weight: bold;
-            }
-
-            .sql-string {
-                color: #198754;
-            }
-
-            .sql-number {
-                color: #dc3545;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-
-            # Function to format SQL for display with basic syntax highlighting
-            def format_sql_for_display(sql_query: str) -> str:
-                """Format SQL query with basic syntax highlighting."""
-                # SQL keywords to highlight
-                keywords = [
-                    'SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'LIMIT',
-                    'JOIN', 'LEFT', 'RIGHT', 'INNER', 'OUTER', 'ON', 'AS',
-                    'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'DISTINCT',
-                    'AND', 'OR', 'NOT', 'IN', 'LIKE', 'ILIKE', 'BETWEEN',
-                    'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'DESC', 'ASC',
-                    'HAVING', 'UNION', 'ALL', 'EXISTS', 'UPDATE', 'INSERT',
-                    'DELETE', 'CREATE', 'DROP', 'ALTER', 'TABLE', 'INDEX'
-                ]
-
-                formatted_sql = sql_query
-
-                # Highlight keywords (case insensitive)
-                for keyword in keywords:
-                    pattern = re.compile(r'\b' + keyword + r'\b', re.IGNORECASE)
-                    formatted_sql = pattern.sub(f'<span class="sql-keyword">{keyword}</span>', formatted_sql)
-
-                # Highlight strings (basic - matches content between single quotes)
-                formatted_sql = re.sub(r"'([^']*)'", r'<span class="sql-string">\'\\1\'</span>', formatted_sql)
-
-                # Highlight numbers
-                formatted_sql = re.sub(r'\b(\d+)\b', r'<span class="sql-number">\\1</span>', formatted_sql)
-
-                return formatted_sql
 
             # Show final answer in the response container
             with response_container:
                 with st.chat_message("assistant"):
                     formatted_html = format_llm_response(natural_response)
                     st.markdown(formatted_html, unsafe_allow_html=True)
-                    if sql_query and not (isinstance(result, dict) and "error" in result):
-                        formatted_sql = format_sql_for_display(sql_query)
-                        st.markdown(f"""
-                               <div class="sql-query-container">
-                                   <div class="sql-query-header">
-                                       <span class="sql-query-icon">🔍</span>
-                                       SQL Query Used:
-                                   </div>
-                                   <div class="sql-query-code">
-                                       {formatted_sql}
-                                   </div>
-                               </div>
-                               """, unsafe_allow_html=True)
+                    with st.expander("🔍 View SQL Query", expanded=False):
+                        st.code(sql_query, language="sql")
 
                     current_message_idx = len(
                         [m for m in st.session_state.chat_history if m["role"] == "assistant"]
